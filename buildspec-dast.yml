@@ -1,0 +1,23 @@
+version: 0.2 
+
+env:
+  variables:
+    AX_URL: "https://EC2AMAZ-05L6MS8:3443/"
+    API_KEY: "1986ad8c0a5b3df4d7028d5f3c06e936cb76e9c6bb2724624a1aec53d69b63250"
+    TARGET_URL: "http://microservices-alb-378719409.ap-south-1.elb.amazonaws.com/"
+    TARGET_DESC: "Automated API Security Scan"
+    FULL_SCAN_PROFILE_ID: "11111111-1111-1111-1111-111111111111"
+phases: 
+  pre_build: 
+    commands: 
+       - chmod +x ax-python-api.py
+       - sudo yum install python3-pip -y
+       - pip3 --version
+       - pip install json >= 2.0.9
+       - pip install requests
+       - pip install ssl
+       - pip install time
+       - pip install urllib3
+       - ./ax-python-api.py
+      
+   

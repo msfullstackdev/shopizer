@@ -1,0 +1,67 @@
+version: 0.2
+
+env:
+  variables:
+    IMAGE_NAME: "shopizer"
+    CONTAINER_REPO_URI: "439724164519.dkr.ecr.ap-south-1.amazonaws.com/shopizer"
+    AWS_REGION: "ap-south-1"
+    # PROJECT_NAME: "shopizer"
+    # CX_SERVER: "http://localtest:80/"
+    # CX_USER: "admin"
+    # CX_PASSWORD: "password"
+    # LOCATION_PATH: "tamil"
+
+phases:
+  install:
+    runtime-versions:
+      java: corretto11
+
+    # commands:
+    #   #- wget -O ./CxConsole.zip "https://download.checkmarx.com/9.5.0/Plugins/CxConsolePlugin-1.1.18.zip"
+    #   - echo unzipping the CxConsole.zip
+    #   - unzip CxConsole.zip
+    #   - chmod +x $(pwd)/runCxConsole.sh
+    #   - bash $(pwd)/runCxConsole.sh Scan -v -ProjectName $PROJECT_NAME -CxServer $CX_SERVER -cxuser $CX_USER -cxpassword $CX_PASSWORD -LocationType folder -LocationPath $LOCATION_PATH -preset "Checkmarx Default"
+     
+  
+  pre_build:
+    commands:
+      - mvn -version
+      - mvn clean install -DskipTests=true
+      - echo Logging in to Amazon ECR..
+      - aws --version
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+
+  build:
+    commands:
+      - echo build started on `date`
+      - echo building the docker image
+      - cd sm-shop
+      - docker build -t $CONTAINER_REPO_URI:latest .
+      - docker tag $CONTAINER_REPO_URI:latest $CONTAINER_REPO_URI:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo build completed on `date`
+      - echo Pushing the docker images
+      - echo build completed on `date`
+      # - echo Running the checkmarx SAST scan..
+      - echo Pushing the docker images
+      - docker push $CONTAINER_REPO_URI:latest 
+      - docker push $CONTAINER_REPO_URI:$IMAGE_TAG
+      - echo Writing the image definitons file..
+      - printf '[{"name":"CONTAINER_NAME","imageUri":"IMAGE_URI"}]' > imagedefinitions.json
+      - sed -i -e "s|CONTAINER_NAME|shop|g" imagedefinitions.json
+      - sed -i -e "s|IMAGE_URI|$CONTAINER_REPO_URI:$IMAGE_TAG|g" imagedefinitions.json
+      - cat imagedefinitions.json
+      - echo $(pwd)
+      
+artifacts:
+  files:
+    - sm-shop/imagedefinitions.json  
+
+cache:
+  paths:
+    - '/root/.m2/**/*' 
+  
