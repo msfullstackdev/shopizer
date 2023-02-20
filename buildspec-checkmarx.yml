@@ -31,16 +31,16 @@ phases:
         - export CX_REPO_BRANCH=$(basename "$CODEBUILD_WEBHOOK_HEAD_REF") 
         - curl -sSL https://cli.kondukto.io | sudo sh
         - |
-          kdt --host=$(KONDUKTO_HOST) --token=$(KONDUKTO_TOKEN) \
-          scan -p $(CX_REPO_NAME) \
+          kdt --host="${KONDUKTO_HOST}" --token="${KONDUKTO_TOKEN}" \
+          scan -p "${CX_REPO_NAME}" \
           -t checkmarx \
-          -b $(CX_REPO_BRANCH)
+          -b "${CX_REPO_BRANCH}"
         - |
-          kdt --host=$(KONDUKTO_HOST) --token=$(KONDUKTO_TOKEN) \
-          scan -p $(CX_REPO_NAME) \
+          kdt --host="${KONDUKTO_HOST}" --token="${KONDUKTO_TOKEN}" \
+          scan -p "${CX_REPO_NAME}" \
           -t dependencycheck \
           -f dependency-check-results.json \
-          -b $(CX_REPO_BRANCH)
+          -b "${CX_REPO_NAME}"
       #  - export CX_REPO_NAME=$(basename "$CODEBUILD_SOURCE_REPO_URL" .git)
       #  - export CX_REPO_BRANCH=$(basename "$CODEBUILD_WEBHOOK_HEAD_REF") 
       #  - |
