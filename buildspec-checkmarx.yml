@@ -32,7 +32,7 @@ phases:
         - curl -sSL https://cli.kondukto.io | sudo sh
         - kdt list scanners --host="${KONDUKTO_HOST}" --token="${KONDUKTO_TOKEN}"  --insecure
         - |
-          kdt --host="${KONDUKTO_HOST}" --token="${KONDUKTO_TOKEN}" \
+          kdt --host="${KONDUKTO_HOST}" --token="${KONDUKTO_TOKEN}" --insecure \
           scan -p "${CX_REPO_NAME}" \
           -t checkmarx \
           -b "${CX_REPO_BRANCH}"
