@@ -14,5 +14,5 @@ steps:
     # mvn clean install
     # cd sm-shop
     # docker build -t shopizerecomm/shopizer:latest .
-    docker run -p 8080:8080 shopizerecomm/shopizer:latest
+    docker run -d -p 8080:8080 shopizerecomm/shopizer:latest
   displayName: 'Run a multi-line script'
