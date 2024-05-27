@@ -16,8 +16,8 @@ stages:
         steps:
           - checkout: none
           - script: |
-              docker pull shopizerc/shopizer
-              docker run -d -p 8080:8080 shopizerc/shopizer
+              docker pull shopizerecomm/shopizer:latest
+              docker run -d -p 8080:8080 shopizerecomm/shopizer:latest
             displayName: 'Run Shopizer in Docker'
 
           - task: UsePythonVersion@0
