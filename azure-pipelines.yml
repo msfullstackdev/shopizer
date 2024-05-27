@@ -14,6 +14,7 @@ stages:
       - job: Run_Shopizer_And_Scans
         displayName: 'Run Shopizer and Perform Security Scans'
         steps:
+          - checkout: none
           - script: |
               docker pull shopizerecomm/shopizer:latest
               docker run -d -p 8080:8080 shopizerecomm/shopizer:latest
