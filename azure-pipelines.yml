@@ -1,18 +1,81 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
-- main
+  - main
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'ubuntu-latest'
 
-steps:
-- script: |
-    # mvn clean install
-    # cd sm-shop
-    # docker build -t shopizerecomm/shopizer:latest .
-    docker run -d -p 8080:8080 shopizerecomm/shopizer:latest
-  displayName: 'Run a multi-line script'
+variables:
+  AKTO_API_KEY: 'your_akto_api_key'
+  API_URL: 'http://localhost:8080'
+
+stages:
+  - stage: Security_Scanning
+    jobs:
+      - job: Run_Shopizer_And_Scans
+        displayName: 'Run Shopizer and Perform Security Scans'
+        steps:
+          - checkout: none
+          - script: |
+              docker pull shopizerc/shopizer
+              docker run -d -p 8080:8080 shopizerc/shopizer
+            displayName: 'Run Shopizer in Docker'
+
+          - task: UsePythonVersion@0
+            inputs:
+              versionSpec: '3.x'
+              addToPath: true
+
+          - script: |
+              pip install akto-cli
+              echo "Akto CLI installed"
+            displayName: 'Install Akto CLI'
+
+          - script: |
+              docker pull wallarm/gotestwaf
+              echo "Wallarm WAF pulled"
+            displayName: 'Pull Wallarm Docker Image'
+
+          - script: |
+              docker pull owasp/zap2docker-stable
+              echo "ZAP Docker Image pulled"
+            displayName: 'Pull ZAP Docker Image'
+
+          # - script: |
+          #     akto scan --api-key $(AKTO_API_KEY) --target $(API_URL) --output akto_results.json
+          #   displayName: 'Run Akto Scan'
+
+          - script: |
+              docker run --rm -v $(System.DefaultWorkingDirectory):/data wallarm/gotestwaf:latest \
+                --url $(API_URL) \
+                --checks all \
+                --report-path /data/wallarm_scan.json
+            displayName: 'Run Wallarm Scan'
+
+          - script: |
+              docker run --rm -v $(System.DefaultWorkingDirectory):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
+                -t $(API_URL) -J zap_results.json
+            displayName: 'Run ZAP Scan'
+
+          - script: |
+              python3 consolidate_results.py
+            displayName: 'Consolidate Scan Results'
+
+          # - task: PublishBuildArtifacts@1
+          #   inputs:
+          #     pathtoPublish: '$(System.DefaultWorkingDirectory)/akto_results.json'
+          #     artifactName: 'AktoResults'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(System.DefaultWorkingDirectory)/wallarm_scan.json'
+              artifactName: 'WallarmResults'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(System.DefaultWorkingDirectory)/zap_results.json'
+              artifactName: 'ZapResults'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(System.DefaultWorkingDirectory)/aggregated_results.json'
+              artifactName: 'AggregatedResults'
