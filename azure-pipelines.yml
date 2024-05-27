@@ -14,11 +14,25 @@ stages:
       - job: Run_Shopizer_And_Scans
         displayName: 'Run Shopizer and Perform Security Scans'
         steps:
-          - checkout: none
           - script: |
               docker pull shopizerecomm/shopizer:latest
               docker run -d -p 8080:8080 shopizerecomm/shopizer:latest
             displayName: 'Run Shopizer in Docker'
+
+          - script: |
+              echo "Waiting for Shopizer API to be ready..."
+              for i in {1..30}; do
+                if curl -s -o /dev/null -w "%{http_code}" $(API_URL) | grep -q "200"; then
+                  echo "Shopizer API is up and running."
+                  exit 0
+                else
+                  echo "Waiting for Shopizer API... ($i/30)"
+                  sleep 10
+                fi
+              done
+              echo "Shopizer API did not become ready in time."
+              exit 1
+            displayName: 'Wait for Shopizer API to be ready'
 
           - task: UsePythonVersion@0
             inputs:
