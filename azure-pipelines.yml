@@ -44,8 +44,8 @@ stages:
             displayName: 'Download OpenAPI JSON'
 
           - script: |
-              AUTH_ENDPOINT=$(jq -r '.paths | to_entries[] | select(.value.post.security) | .key' openapi.json)
-              AUTH_RESPONSE=$(curl -s -X POST "$(API_URL)$AUTH_ENDPOINT" -H "Content-Type: application/json" -d '{"username":"admin", "password":"password"}')
+              AUTH_ENDPOINT="api/v1/private/login"
+              AUTH_RESPONSE=$(curl -s -X POST "$(API_URL)/$AUTH_ENDPOINT" -H "Content-Type: application/json" -d '{"username":"admin@shopizer.com", "password":"password"}')
               AUTH_TOKEN=$(echo $AUTH_RESPONSE | jq -r '.token')
               echo "Retrieved Auth Token: $AUTH_TOKEN"
               echo "##vso[task.setvariable variable=AUTH_TOKEN]$AUTH_TOKEN"
