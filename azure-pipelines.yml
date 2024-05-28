@@ -62,6 +62,11 @@ stages:
               "
             displayName: 'Install OpenAPI Plugin and Run ZAP API Scan with Auth'
           
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(System.DefaultWorkingDirectory)/zap_results.json'
+              artifactName: 'ZapResults'
+          
           # - script: |
           #     docker run --rm -v $(System.DefaultWorkingDirectory):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
           #       -t $(API_URL) \
