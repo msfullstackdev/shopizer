@@ -13,6 +13,7 @@ stages:
   - stage: Security_Scanning
     jobs:
       - job: Run_Shopizer_And_Scans
+        timeoutInMinutes: 1200
         displayName: 'Run Shopizer and Perform Security Scans'
         steps:
           - checkout: none
@@ -66,6 +67,11 @@ stages:
             inputs:
               pathtoPublish: '$(System.DefaultWorkingDirectory)/zap_results.json'
               artifactName: 'ZapResults'
+          
+          - task: PublishBuildArtifacts@1
+            inputs:
+              pathtoPublish: '$(System.DefaultWorkingDirectory)/zap_report.html'
+              artifactName: 'ZapHtmlReport'
           
           # - script: |
           #     docker run --rm -v $(System.DefaultWorkingDirectory):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
